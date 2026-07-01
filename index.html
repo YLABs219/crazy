@@ -145,13 +145,37 @@
 
     .scene-panel.active { opacity: 1; pointer-events: auto; }
 
-    #bootScreen, #titleScreen {
+    #bootScreen {
       align-items: center;
       justify-content: center;
       padding: 12px;
       max-width: 100%;
       overflow: hidden;
     }
+
+    #titleScreen, #gameScreen {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .title-scroll, .game-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 10px 12px 12px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: auto;
+    }
+
+    .title-scroll {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title-scroll::-webkit-scrollbar, .game-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .title-scroll::-webkit-scrollbar-thumb, .game-scroll::-webkit-scrollbar-thumb { background: var(--px-dark); }
 
     .boot-logo { font-size: 15px; font-weight: bold; letter-spacing: 0.2em; text-align: center; margin-bottom: 8px; min-height: 24px; }
     .boot-sub { font-size: 11px; color: var(--px-dim); letter-spacing: 0.2em; margin-bottom: 24px; min-height: 18px; }
@@ -195,7 +219,7 @@
 
     @keyframes menuBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-    .menu-hint { margin-top: 14px; font-size: 10px; color: var(--px-dim); letter-spacing: 0.1em; text-align: center; }
+    .menu-hint { margin-top: 10px; font-size: 10px; color: var(--px-dim); letter-spacing: 0.1em; text-align: center; }
     .sound-toggle {
       margin-top: 10px; font-size: 10px; background: none; border: 2px solid var(--px-dark);
       color: var(--px-dim); padding: 4px 10px; cursor: pointer;
@@ -203,19 +227,9 @@
     .sound-toggle.on { border-color: var(--px); color: var(--px); }
 
     /* 游戏滚动区 */
-    #gameScreen { padding: 0; }
-
     .game-scroll {
-      height: 100%;
-      overflow: auto;
       padding: 10px;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      scroll-behavior: auto;
     }
-
-    .game-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-    .game-scroll::-webkit-scrollbar-thumb { background: var(--px-dark); }
 
     .game-header {
       text-align: center; border-bottom: 4px double var(--px);
@@ -547,16 +561,20 @@
           </div>
 
           <div class="scene-panel" id="titleScreen">
-            <div class="title-art">
-              <div class="title-main">瑞安 我又来了</div>
-              <div class="title-sub">欢迎回来，孙高敏</div>
-              <div class="title-en">RYAN I'M BACK AGAIN</div>
+            <div class="title-scroll" id="titleScroll">
+              <div class="title-art">
+                <div class="title-main">瑞安 我又来了</div>
+                <div class="title-sub">欢迎回来，孙高敏</div>
+                <div class="title-en">RYAN I'M BACK AGAIN</div>
+              </div>
+              <pre class="pixel-sprite" id="pixelSprite"></pre>
+              <button class="menu-item focused" id="startBtn">开始闯关</button>
+              <button class="menu-item" id="resetBtn" style="display:none">新游戏</button>
+              <button class="menu-item" id="soundToggle">♪ BGM: ON</button>
+              <p class="menu-hint">支持微信打开 · 自动存档</p>
+              <div style="height: 20px;"></div>
             </div>
-            <pre class="pixel-sprite" id="pixelSprite"></pre>
-            <button class="menu-item focused" id="startBtn">开始闯关</button>
-            <button class="menu-item" id="resetBtn" style="display:none">新游戏</button>
-            <button class="menu-item" id="soundToggle">♪ BGM: ON</button>
-            <p class="menu-hint">A 确认 · B 返回<br>支持微信打开 · 自动存档</p>
+            <div class="control-bar" id="titleControlBar">A 确认 · B 返回 · 方向键/滑动 滚屏</div>
           </div>
 
           <div class="scene-panel" id="gameScreen">
@@ -870,6 +888,7 @@
     // ========== 状态 ==========
     const bootScreen = document.getElementById('bootScreen');
     const titleScreen = document.getElementById('titleScreen');
+    const titleScroll = document.getElementById('titleScroll');
     const gameScreen = document.getElementById('gameScreen');
     const gameScroll = document.getElementById('gameScroll');
     const questList = document.getElementById('questList');
@@ -1135,6 +1154,7 @@
       if (name === 'boot') bootScreen.classList.add('active');
       if (name === 'title') {
         titleScreen.classList.add('active');
+        if (titleScroll) titleScroll.scrollTop = 0;
         updateTitleMenu();
       }
       if (name === 'game') {
@@ -1159,7 +1179,7 @@
         return document.getElementById('vkeyboard') || quizBody;
       }
       if (currentScene === 'game') return gameScroll;
-      if (currentScene === 'title') return titleScreen;
+      if (currentScene === 'title') return titleScroll;
       return null;
     }
 
@@ -1723,6 +1743,8 @@
 
     function updateTitleFocus() {
       titleMenuItems.forEach((el, i) => el.classList.toggle('focused', i === titleFocus));
+      const cur = titleMenuItems[titleFocus];
+      if (cur && titleScroll) cur.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function moveTitleFocus(dir) {
@@ -1815,7 +1837,7 @@
       }, { passive: true });
     }
     bindSwipe(gameScroll);
-    bindSwipe(titleScreen);
+    bindSwipe(titleScroll);
     bindSwipe(quizBody);
     bindSwipe(document.getElementById('vkeyboard'));
 
