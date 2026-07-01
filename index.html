@@ -21,6 +21,7 @@
       --px-bg: #000000;
       --shell: #1a1a1a;
       --shell-light: #333333;
+      --device-w: min(300px, 88vw);
     }
 
     html, body {
@@ -41,30 +42,30 @@
       image-rendering: pixelated;
       touch-action: manipulation;
       padding:
-        max(6px, env(safe-area-inset-top))
-        max(6px, env(safe-area-inset-right))
-        max(6px, env(safe-area-inset-bottom))
-        max(6px, env(safe-area-inset-left));
-    }
-
-    .handheld-viewport {
-      width: 100%;
-      height: 100%;
-      max-height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        max(8px, env(safe-area-inset-top))
+        max(8px, env(safe-area-inset-right))
+        max(8px, env(safe-area-inset-bottom))
+        max(8px, env(safe-area-inset-left));
       overflow: hidden;
     }
 
-    .handheld {
-      width: min(380px, 92vw);
-      background: var(--shell);
-      border: 4px solid #000;
-      box-shadow: inset 0 0 0 4px var(--shell-light), inset 0 0 0 8px #000, 0 0 0 4px #444, 0 20px 60px rgba(0,0,0,0.8);
-      padding: 16px 18px 22px;
+    .handheld-viewport {
+      width: var(--device-w);
+      max-width: 100%;
       transform-origin: center center;
       flex-shrink: 0;
+    }
+
+    .handheld {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background: linear-gradient(165deg, #252525 0%, var(--shell) 40%, #121212 100%);
+      border: 4px solid #000;
+      box-shadow: inset 0 0 0 2px var(--shell-light), 0 16px 48px rgba(0,0,0,0.85);
+      padding: 14px 16px 18px;
+      overflow: hidden;
     }
 
     .device-label {
@@ -72,27 +73,45 @@
       font-family: "Press Start 2P", monospace;
       font-size: 7px;
       color: #666;
-      letter-spacing: 0.15em;
-      margin-bottom: 14px;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
       line-height: 1.8;
+      flex-shrink: 0;
     }
 
+    /* 屏幕槽：宽高比固定，与机身同宽对齐 */
     .screen-bezel {
-      background: #111;
-      padding: 10px;
-      border: 4px solid #000;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      width: 100%;
+      aspect-ratio: 10 / 9;
+      flex-shrink: 0;
+      padding: 5px;
+      background: #080808;
+      border: 3px solid #000;
+      box-shadow: inset 0 0 14px rgba(0,0,0,0.95);
       overflow: hidden;
     }
 
+    /* 游戏画面：铺满屏幕槽，不再单独撑宽 */
     .screen {
       position: relative;
       width: 100%;
+      height: 100%;
       background: var(--px-bg);
-      border: 4px solid var(--px-dark);
-      box-shadow: inset 0 0 0 4px var(--px);
-      aspect-ratio: 10 / 9;
-      min-height: 0;
+      border: 2px solid #666;
+      padding: 2px;
+      overflow: hidden;
+    }
+
+    .screen-inner {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--px);
+      background: var(--px-bg);
+      color: var(--px);
+      font-size: 13px;
+      line-height: 1.6;
       overflow: hidden;
     }
 
@@ -114,15 +133,6 @@
 
     @keyframes crtFlicker { 0% { opacity: 0.97; } 100% { opacity: 1; } }
 
-    .screen-inner {
-      position: relative;
-      z-index: 10;
-      height: 100%;
-      color: var(--px);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
     .scene-panel {
       position: absolute;
       inset: 0;
@@ -138,7 +148,9 @@
     #bootScreen, #titleScreen {
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 12px;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .boot-logo { font-size: 15px; font-weight: bold; letter-spacing: 0.2em; text-align: center; margin-bottom: 8px; min-height: 24px; }
@@ -305,8 +317,12 @@
     .reveal-hint { margin-top: 10px; font-size: 9px; color: var(--px-dim); animation: blink 1.2s step-end infinite; }
 
     .device-controls {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 16px; padding: 0 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      padding: 0 4px;
+      flex-shrink: 0;
     }
 
     .dpad { width: 72px; height: 72px; position: relative; user-select: none; }
@@ -482,15 +498,16 @@
     .access-err { color: #aa6666; font-size: 10px; min-height: 16px; margin-top: 8px; }
 
     @media (max-width: 420px), (max-height: 740px) {
-      .handheld { padding: 12px 14px 18px; }
-      .device-label { font-size: 6px; margin-bottom: 10px; }
-      .screen-bezel { padding: 8px; }
+      :root { --device-w: min(280px, 90vw); }
+      .handheld { padding: 12px 14px 16px; }
+      .device-label { font-size: 6px; margin-bottom: 8px; }
+      .screen-bezel { padding: 4px; }
       .boot-logo { font-size: 13px; }
       .boot-sub { font-size: 10px; margin-bottom: 16px; }
       .load-bar-wrap { width: 88%; }
       .title-main { font-size: 15px; }
       .menu-item { font-size: 13px; padding: 8px 14px; }
-      .device-controls { margin-top: 12px; }
+      .device-controls { margin-top: 10px; }
     }
   </style>
 </head>
@@ -657,14 +674,14 @@
     }
 
     function fitHandheldScale() {
-      const shell = document.getElementById('handheldShell');
-      if (!shell) return;
-      shell.style.transform = 'none';
-      const margin = 16;
+      const viewport = document.getElementById('handheldViewport');
+      if (!viewport) return;
+      viewport.style.transform = 'none';
+      const margin = 20;
       const viewH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       const viewW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-      const scale = Math.min(1, (viewH - margin) / shell.offsetHeight, (viewW - margin) / shell.offsetWidth);
-      shell.style.transform = scale < 0.999 ? 'scale(' + scale + ')' : 'none';
+      const scale = Math.min(1, (viewH - margin) / viewport.offsetHeight, (viewW - margin) / viewport.offsetWidth);
+      viewport.style.transform = scale < 0.999 ? 'scale(' + scale + ')' : 'none';
     }
 
     function initAccessGate() {
