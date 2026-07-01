@@ -23,26 +23,48 @@
       --shell-light: #333333;
     }
 
-    html, body { height: 100%; overflow: hidden; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
 
     body {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
       background: #080808;
       font-family: "Courier New", "SimSun", "宋体", monospace;
       -webkit-font-smoothing: none;
       -moz-osx-font-smoothing: grayscale;
       image-rendering: pixelated;
       touch-action: manipulation;
+      padding:
+        max(6px, env(safe-area-inset-top))
+        max(6px, env(safe-area-inset-right))
+        max(6px, env(safe-area-inset-bottom))
+        max(6px, env(safe-area-inset-left));
+    }
+
+    .handheld-viewport {
+      width: 100%;
+      height: 100%;
+      max-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
 
     .handheld {
-      width: min(420px, 94vw);
+      width: min(380px, 92vw);
       background: var(--shell);
       border: 4px solid #000;
       box-shadow: inset 0 0 0 4px var(--shell-light), inset 0 0 0 8px #000, 0 0 0 4px #444, 0 20px 60px rgba(0,0,0,0.8);
-      padding: 20px 24px 28px;
+      padding: 16px 18px 22px;
+      transform-origin: center center;
+      flex-shrink: 0;
     }
 
     .device-label {
@@ -57,19 +79,20 @@
 
     .screen-bezel {
       background: #111;
-      padding: 12px;
+      padding: 10px;
       border: 4px solid #000;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      overflow: hidden;
     }
 
     .screen {
       position: relative;
+      width: 100%;
       background: var(--px-bg);
       border: 4px solid var(--px-dark);
-      outline: 4px solid var(--px);
-      outline-offset: -8px;
+      box-shadow: inset 0 0 0 4px var(--px);
       aspect-ratio: 10 / 9;
-      min-height: 320px;
+      min-height: 0;
       overflow: hidden;
     }
 
@@ -347,12 +370,23 @@
     }
 
     .quiz-img-wrap {
-      border: 4px solid var(--px); padding: 4px; margin-bottom: 8px;
-      background: #111; min-height: 100px;
+      border: 4px solid var(--px);
+      padding: 4px;
+      margin-bottom: 8px;
+      background: #111;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     .quiz-img-wrap img {
-      width: 100%; height: auto; display: block;
-      image-rendering: pixelated; max-height: 140px; object-fit: contain;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      image-rendering: auto;
     }
     .quiz-img-label {
       font-size: 9px; color: var(--px-dim); text-align: center; margin-top: 4px;
@@ -446,6 +480,18 @@
       font-family: inherit; font-weight: bold; letter-spacing: 0.2em; cursor: pointer;
     }
     .access-err { color: #aa6666; font-size: 10px; min-height: 16px; margin-top: 8px; }
+
+    @media (max-width: 420px), (max-height: 740px) {
+      .handheld { padding: 12px 14px 18px; }
+      .device-label { font-size: 6px; margin-bottom: 10px; }
+      .screen-bezel { padding: 8px; }
+      .boot-logo { font-size: 13px; }
+      .boot-sub { font-size: 10px; margin-bottom: 16px; }
+      .load-bar-wrap { width: 88%; }
+      .title-main { font-size: 15px; }
+      .menu-item { font-size: 13px; padding: 8px 14px; }
+      .device-controls { margin-top: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -463,7 +509,8 @@
 
   <canvas id="confetti-canvas"></canvas>
 
-  <div class="handheld">
+  <div class="handheld-viewport" id="handheldViewport">
+  <div class="handheld" id="handheldShell">
     <div class="device-label">RYAN GAME SYSTEM<br>PLAYER: SUN GAOMIN</div>
 
     <div class="screen-bezel">
@@ -572,6 +619,7 @@
       </div>
     </div>
   </div>
+  </div>
 
   <script>
     // ============================================================
@@ -608,12 +656,24 @@
       }
     }
 
+    function fitHandheldScale() {
+      const shell = document.getElementById('handheldShell');
+      if (!shell) return;
+      shell.style.transform = 'none';
+      const margin = 16;
+      const viewH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const viewW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const scale = Math.min(1, (viewH - margin) / shell.offsetHeight, (viewW - margin) / shell.offsetWidth);
+      shell.style.transform = scale < 0.999 ? 'scale(' + scale + ')' : 'none';
+    }
+
     function initAccessGate() {
       const gate = document.getElementById('accessGate');
       const input = document.getElementById('accessInput');
       const err = document.getElementById('accessErr');
       if (isAccessGranted()) {
         gate.classList.add('hidden');
+        requestAnimationFrame(fitHandheldScale);
         return;
       }
       gate.classList.remove('hidden');
@@ -622,6 +682,7 @@
           try { sessionStorage.setItem(GAME_CONFIG.accessSessionKey, '1'); } catch (e) {}
           gate.classList.add('hidden');
           err.textContent = '';
+          requestAnimationFrame(fitHandheldScale);
         } else {
           err.textContent = '访问码不正确';
           sfxBeep(110, 0.1, 'sawtooth', 0.06);
@@ -1800,6 +1861,12 @@
     }
     runBoot();
     initAccessGate();
+    fitHandheldScale();
+    window.addEventListener('resize', fitHandheldScale);
+    window.addEventListener('orientationchange', () => setTimeout(fitHandheldScale, 120));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', fitHandheldScale);
+    }
 
     window.addEventListener('error', (e) => {
       flashToast('页面出错，请刷新重试');
