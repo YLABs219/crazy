@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>瑞安 我又来了</title>
+  <!-- 微信环境不使用 Google 字体，避免国内加载失败 -->
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --px: #ffffff;
+      --px-dim: #aaaaaa;
+      --px-dark: #555555;
+      --px-bg: #000000;
+      --shell: #1a1a1a;
+      --shell-light: #333333;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080808;
+      font-family: "Courier New", "SimSun", "宋体", monospace;
+      -webkit-font-smoothing: none;
+      -moz-osx-font-smoothing: grayscale;
+      image-rendering: pixelated;
+      touch-action: manipulation;
+    }
+
+    .handheld {
+      width: min(420px, 94vw);
+      background: var(--shell);
+      border: 4px solid #000;
+      box-shadow: inset 0 0 0 4px var(--shell-light), inset 0 0 0 8px #000, 0 0 0 4px #444, 0 20px 60px rgba(0,0,0,0.8);
+      padding: 20px 24px 28px;
+    }
+
+    .device-label {
+      text-align: center;
+      font-family: "Press Start 2P", monospace;
+      font-size: 7px;
+      color: #666;
+      letter-spacing: 0.15em;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .screen-bezel {
+      background: #111;
+      padding: 12px;
+      border: 4px solid #000;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    .screen {
+      position: relative;
+      background: var(--px-bg);
+      border: 4px solid var(--px-dark);
+      outline: 4px solid var(--px);
+      outline-offset: -8px;
+      aspect-ratio: 10 / 9;
+      min-height: 320px;
+      overflow: hidden;
+    }
+
+    .scanlines, .crt-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .scanlines {
+      background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
+    }
+
+    .crt-overlay {
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+      animation: crtFlicker 0.12s infinite alternate;
+    }
+
+    @keyframes crtFlicker { 0% { opacity: 0.97; } 100% { opacity: 1; } }
+
+    .screen-inner {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      color: var(--px);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .scene-panel {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s step-end;
+    }
+
+    .scene-panel.active { opacity: 1; pointer-events: auto; }
+
+    #bootScreen, #titleScreen {
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .boot-logo { font-size: 15px; font-weight: bold; letter-spacing: 0.2em; text-align: center; margin-bottom: 8px; min-height: 24px; }
+    .boot-sub { font-size: 11px; color: var(--px-dim); letter-spacing: 0.2em; margin-bottom: 24px; min-height: 18px; }
+    .boot-status { font-size: 11px; color: var(--px-dim); margin-bottom: 8px; min-height: 18px; }
+    .load-bar-wrap { width: 80%; max-width: 260px; border: 4px solid var(--px); padding: 4px; margin-bottom: 16px; }
+    .load-bar { display: flex; gap: 2px; height: 16px; }
+    .load-block { flex: 1; background: var(--px-dark); }
+    .load-block.filled { background: var(--px); }
+    .boot-blink { font-size: 10px; color: var(--px-dim); animation: blink 0.8s step-end infinite; }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .title-art {
+      width: 100%; max-width: 280px; border: 4px solid var(--px); padding: 12px;
+      margin-bottom: 12px; text-align: center; position: relative;
+    }
+    .title-art::before, .title-art::after { content: ''; position: absolute; width: 8px; height: 8px; background: var(--px); }
+    .title-art::before { top: -4px; left: -4px; }
+    .title-art::after { bottom: -4px; right: -4px; }
+    .title-main { font-size: 17px; font-weight: bold; letter-spacing: 0.12em; line-height: 1.5; margin-bottom: 6px; }
+    .title-sub { font-size: 11px; color: var(--px-dim); margin-bottom: 8px; letter-spacing: 0.1em; }
+    .title-en { font-family: "Press Start 2P", monospace; font-size: 6px; color: var(--px-dim); line-height: 2; }
+
+    .pixel-sprite {
+      font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.2;
+      color: var(--px); margin: 10px 0; white-space: pre;
+    }
+
+    .menu-item {
+      font-family: "Courier New", "SimSun", monospace;
+      font-size: 15px; font-weight: bold; letter-spacing: 0.25em;
+      color: var(--px-bg); background: var(--px-dark); border: none;
+      padding: 10px 18px; cursor: pointer; width: 100%; max-width: 240px;
+      box-shadow: 4px 4px 0 #333; margin-top: 8px;
+    }
+
+    .menu-item.focused {
+      background: var(--px);
+      animation: menuBlink 1s step-end infinite;
+    }
+
+    @keyframes menuBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+    .menu-hint { margin-top: 14px; font-size: 10px; color: var(--px-dim); letter-spacing: 0.1em; text-align: center; }
+    .sound-toggle {
+      margin-top: 10px; font-size: 10px; background: none; border: 2px solid var(--px-dark);
+      color: var(--px-dim); padding: 4px 10px; cursor: pointer;
+    }
+    .sound-toggle.on { border-color: var(--px); color: var(--px); }
+
+    /* 游戏滚动区 */
+    #gameScreen { padding: 0; }
+
+    .game-scroll {
+      height: 100%;
+      overflow: auto;
+      padding: 10px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: auto;
+    }
+
+    .game-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .game-scroll::-webkit-scrollbar-thumb { background: var(--px-dark); }
+
+    .game-header {
+      text-align: center; border-bottom: 4px double var(--px);
+      padding-bottom: 8px; margin-bottom: 10px;
+    }
+    .game-header h2 { font-size: 12px; letter-spacing: 0.15em; }
+    .game-header p { color: var(--px-dim); margin-top: 4px; font-family: "Press Start 2P", monospace; font-size: 6px; }
+
+    .player-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 4px;
+      font-size: 9px; color: var(--px-dim); margin-bottom: 8px; padding: 4px 6px;
+      border: 2px solid var(--px-dark);
+    }
+
+    .save-indicator {
+      width: 100%; text-align: center; font-size: 8px; color: var(--px-dark);
+    }
+    .save-indicator.saved { color: var(--px-dim); }
+
+    .quest-card {
+      width: 100%; border: 4px solid var(--px-dark); padding: 4px;
+      margin-bottom: 10px; transition: border-color 0.1s;
+      cursor: pointer;
+    }
+
+    .quest-card.focused { border-color: var(--px); box-shadow: 0 0 0 2px var(--px); }
+    .quest-card.locked { opacity: 0.45; }
+    .quest-card.completed { border-color: var(--px-dim); }
+
+    .quest-card-inner { border: 2px dashed var(--px-dark); padding: 10px; }
+
+    .quest-label {
+      font-size: 14px; font-weight: bold; letter-spacing: 0.2em;
+      margin-bottom: 6px; display: flex; justify-content: space-between;
+    }
+
+    .quest-status-tag {
+      font-size: 9px; color: var(--px-dim); font-weight: normal;
+    }
+
+    .quest-meta {
+      display: flex; justify-content: space-between; font-size: 9px;
+      color: var(--px-dim); border-bottom: 2px solid var(--px-dark);
+      padding-bottom: 6px; margin-bottom: 8px;
+    }
+
+    .quest-icon-box {
+      text-align: center; font-size: 10px; padding: 6px 0;
+      border: 2px solid var(--px-dark); margin-bottom: 8px; letter-spacing: 0.1em;
+    }
+
+    .quest-name { font-size: 13px; font-weight: bold; text-align: center; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .quest-desc { font-size: 11px; color: var(--px-dim); line-height: 1.7; margin-bottom: 8px; }
+
+    .section-label { font-size: 10px; margin-bottom: 4px; letter-spacing: 0.15em; }
+    .section-label::before { content: '> '; }
+
+    .objective-item { font-size: 10px; color: var(--px-dim); margin-bottom: 3px; padding-left: 4px; line-height: 1.5; }
+    .objective-item::before { content: '[ ] '; color: var(--px-dark); }
+    .quest-card.accepted .objective-item::before,
+    .quest-card.completed .objective-item::before { content: '[x] '; color: var(--px); }
+
+    .rewards-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+    .reward-tag { font-size: 9px; border: 2px solid var(--px-dark); padding: 2px 6px; color: var(--px-dim); }
+
+    .quest-action-hint {
+      margin-top: 8px; font-size: 9px; text-align: center; color: var(--px);
+      padding: 4px; border: 2px dotted var(--px-dark);
+    }
+
+    .control-bar {
+      flex-shrink: 0; font-size: 8px; color: var(--px-dim);
+      text-align: center; padding: 6px 4px; border-top: 2px solid var(--px-dark);
+      letter-spacing: 0.05em; line-height: 1.6;
+    }
+
+    .toast {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: var(--px); color: var(--px-bg); font-size: 9px;
+      padding: 4px 10px; z-index: 60; opacity: 0; pointer-events: none;
+      transition: opacity 0.15s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    .reveal-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.94);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 40; opacity: 0; pointer-events: none; padding: 10px;
+    }
+    .reveal-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .reveal-box { border: 4px solid var(--px); padding: 4px; width: 100%; max-height: 92%; overflow-y: auto; }
+    .reveal-inner { border: 2px dashed var(--px-dark); padding: 12px 10px; text-align: center; }
+    .reveal-badge { font-family: "Press Start 2P", monospace; font-size: 7px; margin-bottom: 8px; }
+    .reveal-title { font-size: 13px; font-weight: bold; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .reveal-text { font-size: 11px; color: var(--px-dim); line-height: 1.85; margin-bottom: 8px; text-align: left; }
+    .reveal-signature { font-size: 10px; color: var(--px-dark); }
+    .reveal-hint { margin-top: 10px; font-size: 9px; color: var(--px-dim); animation: blink 1.2s step-end infinite; }
+
+    .device-controls {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 16px; padding: 0 8px;
+    }
+
+    .dpad { width: 72px; height: 72px; position: relative; user-select: none; }
+
+    .dpad-btn {
+      position: absolute; background: #222; border: 2px solid #444; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Press Start 2P", monospace; font-size: 6px; color: #666;
+    }
+
+    .dpad-btn:active, .dpad-btn.pressed { background: #444; border-color: #888; color: #aaa; }
+    .dpad-up { width: 24px; height: 20px; top: 0; left: 24px; }
+    .dpad-down { width: 24px; height: 20px; bottom: 0; left: 24px; }
+    .dpad-left { width: 20px; height: 24px; left: 0; top: 24px; }
+    .dpad-right { width: 20px; height: 24px; right: 0; top: 24px; }
+    .dpad-center { width: 18px; height: 18px; top: 27px; left: 27px; background: #111; border-color: #333; pointer-events: none; }
+
+    .action-btns { display: flex; gap: 14px; align-items: center; }
+
+    .ab-btn {
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer; user-select: none;
+      font-family: "Press Start 2P", monospace; font-size: 9px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.06s step-end;
+    }
+
+    .ab-btn:active, .ab-btn.pressed { transform: scale(0.92); }
+
+    .ab-btn-a {
+      background: #2a1515; border: 3px solid #552222; color: #aa5555;
+    }
+    .ab-btn-a:active, .ab-btn-a.pressed { background: #552222; color: #ffaaaa; }
+
+    .ab-btn-b {
+      background: #15152a; border: 3px solid #222255; color: #5555aa;
+    }
+    .ab-btn-b:active, .ab-btn-b.pressed { background: #222255; color: #aaaaff; }
+
+    /* ========== 任务二：猜店挑战 ========== */
+    .quiz-overlay {
+      position: absolute; inset: 0; background: var(--px-bg);
+      z-index: 45; display: none; flex-direction: column;
+      overflow: hidden;
+    }
+    .quiz-overlay.show { display: flex; }
+
+    .quiz-header {
+      flex-shrink: 0; padding: 8px 10px; border-bottom: 4px double var(--px);
+      text-align: center;
+    }
+    .quiz-header h3 { font-size: 12px; letter-spacing: 0.15em; }
+    .quiz-score-bar {
+      display: flex; justify-content: space-between; font-size: 9px;
+      color: var(--px-dim); margin-top: 4px; padding: 0 4px;
+    }
+    .quiz-score-bar .score { color: var(--px); font-weight: bold; }
+
+    .quiz-body {
+      flex: 1; overflow: auto; padding: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .quiz-img-wrap {
+      border: 4px solid var(--px); padding: 4px; margin-bottom: 8px;
+      background: #111; min-height: 100px;
+    }
+    .quiz-img-wrap img {
+      width: 100%; height: auto; display: block;
+      image-rendering: pixelated; max-height: 140px; object-fit: contain;
+    }
+    .quiz-img-label {
+      font-size: 9px; color: var(--px-dim); text-align: center; margin-top: 4px;
+    }
+
+    .hunt-clue-wrap {
+      border: 4px solid var(--px); padding: 8px; margin-bottom: 8px;
+      background: #111; min-height: 88px;
+    }
+    .hunt-clue-tag {
+      font-size: 9px; color: var(--px-dim); margin-bottom: 6px; letter-spacing: 0.15em;
+    }
+    .hunt-clue-text {
+      font-size: 11px; color: var(--px); line-height: 1.75;
+      white-space: pre-wrap; text-align: left; font-family: inherit;
+    }
+
+    .quiz-input-wrap {
+      border: 4px solid var(--px); padding: 6px; margin-bottom: 6px;
+    }
+    .quiz-input-label { font-size: 9px; color: var(--px-dim); margin-bottom: 4px; }
+    .quiz-input {
+      width: 100%; background: #111; border: 2px solid var(--px-dark);
+      color: var(--px); font-family: inherit; font-size: 14px;
+      padding: 6px 8px; outline: none; letter-spacing: 0.1em;
+    }
+    .quiz-input:focus { border-color: var(--px); }
+    .quiz-input.wrong { border-color: #aa4444; animation: shake 0.3s step-end; }
+    .quiz-input.correct { border-color: var(--px); }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .quiz-feedback {
+      font-size: 10px; text-align: center; min-height: 16px; margin-bottom: 4px;
+    }
+    .quiz-feedback.ok { color: var(--px); }
+    .quiz-feedback.err { color: #aa6666; }
+
+    .vkeyboard {
+      flex-shrink: 0; border-top: 4px solid var(--px-dark);
+      background: #0a0a0a; padding: 6px 4px 8px;
+      max-height: 42%; overflow-y: auto;
+    }
+    .vkeyboard-label {
+      font-size: 8px; color: var(--px-dim); text-align: center; margin-bottom: 4px;
+    }
+    .vk-row { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-bottom: 3px; }
+    .vk-key {
+      min-width: 28px; height: 26px; padding: 0 6px;
+      font-family: inherit; font-size: 11px;
+      background: #222; color: var(--px); border: 2px solid #444;
+      cursor: pointer; user-select: none;
+    }
+    .vk-key:active { background: #444; border-color: var(--px-dim); }
+    .vk-key.wide { min-width: 48px; font-size: 9px; }
+    .vk-key.action { background: #333; border-color: var(--px-dark); color: var(--px-dim); }
+    .vk-key.submit { background: var(--px); color: var(--px-bg); border-color: var(--px); font-weight: bold; }
+    .vk-chars { max-height: 72px; overflow-y: auto; }
+
+    .quiz-footer {
+      flex-shrink: 0; font-size: 8px; color: var(--px-dim);
+      text-align: center; padding: 4px; border-top: 2px solid var(--px-dark);
+    }
+
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+
+    .access-gate {
+      position: fixed; inset: 0; z-index: 10000;
+      background: #080808; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .access-gate.hidden { display: none; }
+    .access-box {
+      width: min(360px, 92vw); border: 4px solid #fff; padding: 4px;
+    }
+    .access-inner {
+      border: 2px dashed #555; padding: 20px 16px; text-align: center;
+    }
+    .access-inner h2 { font-size: 14px; letter-spacing: 0.15em; margin-bottom: 8px; }
+    .access-inner p { font-size: 10px; color: #aaa; margin-bottom: 12px; line-height: 1.6; }
+    .access-input {
+      width: 100%; background: #111; border: 2px solid #555; color: #fff;
+      padding: 8px; font-family: inherit; font-size: 14px; margin-bottom: 10px;
+    }
+    .access-btn {
+      width: 100%; padding: 10px; background: #fff; color: #000; border: none;
+      font-family: inherit; font-weight: bold; letter-spacing: 0.2em; cursor: pointer;
+    }
+    .access-err { color: #aa6666; font-size: 10px; min-height: 16px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="access-gate" id="accessGate">
+    <div class="access-box">
+      <div class="access-inner">
+        <h2>私密游戏入口</h2>
+        <p>《瑞安 我又来了》<br>仅限受邀玩家 · 请输入访问码</p>
+        <input type="password" class="access-input" id="accessInput" autocomplete="off" placeholder="访问码" maxlength="32">
+        <button type="button" class="access-btn" id="accessBtn">进入游戏</button>
+        <div class="access-err" id="accessErr"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="handheld">
+    <div class="device-label">RYAN GAME SYSTEM<br>PLAYER: SUN GAOMIN</div>
+
+    <div class="screen-bezel">
+      <div class="screen">
+        <div class="scanlines"></div>
+        <div class="crt-overlay"></div>
+        <div class="toast" id="toast"></div>
+
+        <div class="screen-inner">
+
+          <div class="scene-panel active" id="bootScreen">
+            <div class="boot-logo" id="bootLogo"></div>
+            <div class="boot-sub" id="bootSub"></div>
+            <div class="boot-status" id="bootStatus">INITIALIZING...</div>
+            <div class="load-bar-wrap"><div class="load-bar" id="loadBar"></div></div>
+            <div class="boot-blink" id="bootBlink">PLEASE WAIT</div>
+          </div>
+
+          <div class="scene-panel" id="titleScreen">
+            <div class="title-art">
+              <div class="title-main">瑞安 我又来了</div>
+              <div class="title-sub">欢迎回来，孙高敏</div>
+              <div class="title-en">RYAN I'M BACK AGAIN</div>
+            </div>
+            <pre class="pixel-sprite" id="pixelSprite"></pre>
+            <button class="menu-item focused" id="startBtn">开始闯关</button>
+            <button class="menu-item" id="resetBtn" style="display:none">新游戏</button>
+            <button class="menu-item" id="soundToggle">♪ BGM: ON</button>
+            <p class="menu-hint">A 确认 · B 返回<br>支持微信打开 · 自动存档</p>
+          </div>
+
+          <div class="scene-panel" id="gameScreen">
+            <div class="game-scroll" id="gameScroll">
+              <div class="game-header">
+                <h2>《瑞安 我又来了》</h2>
+                <p>QUEST LOG · SUN GAOMIN</p>
+              </div>
+              <div class="player-bar">
+                <span>玩家：孙高敏</span>
+                <span id="progressText">进度 0/5</span>
+                <span class="save-indicator" id="saveIndicator">存档：准备中</span>
+              </div>
+              <div id="questList"></div>
+              <div style="height: 24px;"></div>
+            </div>
+            <div class="control-bar" id="gameControlBar">A 确认 · B 返回 · 方向键/滑动 滚屏</div>
+
+            <div class="quiz-overlay" id="quizOverlay">
+              <div class="quiz-header">
+                <h3 id="challengeTitle">任务挑战</h3>
+                <div class="quiz-score-bar" id="quizScoreBar">
+                  <span id="quizProgress">第 1 / 5 题</span>
+                  <span id="quizScoreWrap">得分 <span class="score" id="quizScore">0</span> / 5</span>
+                </div>
+              </div>
+              <div class="quiz-body" id="quizBody">
+                <div class="quiz-img-wrap" id="quizImgWrap">
+                  <img id="quizImage" src="" alt="猜店图片">
+                  <div class="quiz-img-label" id="quizImgLabel">请输入店名</div>
+                </div>
+                <div class="hunt-clue-wrap" id="huntClueWrap" style="display:none">
+                  <div class="hunt-clue-tag" id="huntClueTag">线索 1 / 3</div>
+                  <pre class="hunt-clue-text" id="huntClueText"></pre>
+                </div>
+                <div class="quiz-input-wrap">
+                  <div class="quiz-input-label" id="challengeInputLabel">请输入答案</div>
+                  <input type="text" class="quiz-input" id="quizInput" autocomplete="off" spellcheck="false" placeholder="输入答案...">
+                </div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+              </div>
+              <div class="vkeyboard" id="vkeyboard">
+                <div class="vkeyboard-label">▼ 虚拟键盘 ▼</div>
+                <div id="vkContainer"></div>
+              </div>
+              <div class="quiz-footer" id="quizFooter">A 提交答案 · B 返回任务列表</div>
+            </div>
+
+            <div class="reveal-overlay" id="reveal">
+              <div class="reveal-box">
+                <div class="reveal-inner">
+                  <div class="reveal-badge" id="revealBadge"></div>
+                  <h2 class="reveal-title" id="revealTitle"></h2>
+                  <p class="reveal-text" id="revealText"></p>
+                  <p class="reveal-signature" id="revealSignature"></p>
+                  <p class="reveal-hint">按 A 领取 · 按 B 返回</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="device-controls">
+      <div class="dpad" id="dpad">
+        <button class="dpad-btn dpad-up" data-dir="up" aria-label="上">▲</button>
+        <button class="dpad-btn dpad-down" data-dir="down" aria-label="下">▼</button>
+        <button class="dpad-btn dpad-left" data-dir="left" aria-label="左">◀</button>
+        <button class="dpad-btn dpad-right" data-dir="right" aria-label="右">▶</button>
+        <span class="dpad-btn dpad-center"></span>
+      </div>
+      <div class="action-btns">
+        <button class="ab-btn ab-btn-b" id="btnB" aria-label="B">B</button>
+        <button class="ab-btn ab-btn-a" id="btnA" aria-label="A">A</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // ★ 改文字在这里：QUESTS 数组，每条任务一个对象
+    // ============================================================
+    const GAME_CONFIG = {
+      playerName: '孙高敏',
+      gameName: '瑞安 我又来了',
+      saveKey: 'ryan_game_save_v1',
+      accessKey: '0506',
+      accessSessionKey: 'ryan_access_ok_v1'
+    };
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function isAccessGranted() {
+      if (!GAME_CONFIG.accessKey) return true;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('key') === GAME_CONFIG.accessKey) {
+          sessionStorage.setItem(GAME_CONFIG.accessSessionKey, '1');
+          return true;
+        }
+        return sessionStorage.getItem(GAME_CONFIG.accessSessionKey) === '1';
+      } catch (e) {
+        return !GAME_CONFIG.accessKey;
+      }
+    }
+
+    function initAccessGate() {
+      const gate = document.getElementById('accessGate');
+      const input = document.getElementById('accessInput');
+      const err = document.getElementById('accessErr');
+      if (isAccessGranted()) {
+        gate.classList.add('hidden');
+        return;
+      }
+      gate.classList.remove('hidden');
+      function tryEnter() {
+        if (input.value.trim() === GAME_CONFIG.accessKey) {
+          try { sessionStorage.setItem(GAME_CONFIG.accessSessionKey, '1'); } catch (e) {}
+          gate.classList.add('hidden');
+          err.textContent = '';
+        } else {
+          err.textContent = '访问码不正确';
+          sfxBeep(110, 0.1, 'sawtooth', 0.06);
+        }
+      }
+      document.getElementById('accessBtn').addEventListener('click', tryEnter);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); tryEnter(); }
+      });
+      setTimeout(() => input.focus(), 300);
+    }
+
+    const QUESTS = [
+      {
+        label: '任务一',
+        id: '#RY-001',
+        type: '主线 · 启程',
+        icon: '[欢迎孙高敏留学归来]',
+        name: '请领取你的任务卡片',
+        description: '孙高敏，欢迎来到瑞安。接受任务，解锁你的瑞安第一站——瑞立大酒店。',
+        objectives: [
+          '前往指定房间并敲门',
+          '用严肃认真的语气说："你好，学生会查寝，麻烦开下门。"',
+          '完成任务，等待下一站指令'
+        ],
+        rewards: ['惊喜 x1', '惊吓 x∞', '无聊 Buff'],
+        reveal: {
+          badge: 'STAGE 01 CLEAR',
+          title: '任务一完成！',
+          message: [
+            '瑞立大酒店站已解锁。',
+            '记得保持严肃脸，不要笑场。',
+            '任务二已同步到你的地图。'
+          ],
+          signature: '-- 瑞安关卡组 --'
+        }
+      },
+      {
+        label: '任务二',
+        id: '#RY-002',
+        type: '挑战 · 猜店',
+        mode: 'quiz',
+        icon: '[看图 QUIZ]',
+        name: '看图猜店名大挑战',
+        description: '孙高敏，考验你在瑞安的眼力！看图片猜店名，答对 5 题通关。',
+        objectives: [
+          '按 A 进入猜店挑战',
+          '看图片输入店名',
+          '已答对 5 题，撒花'
+        ],
+        rewards: ['眼力 +5', '瑞安通称号', '猜店王 Buff'],
+        quiz: {
+          folder: '游戏/',
+          targetScore: 5,
+          images: [
+            '阿林粉店.jpg',
+            '野果.jpg',
+            '烈火炒面+阿国排档.jpg',
+            '捞王.jpg',
+            '铁锅年代.jpg',
+            '玖五京菜.jpg',
+            '乃之风.jpg'
+          ]
+        },
+        reveal: {
+          badge: 'STAGE 02 CLEAR',
+          title: '猜店大师！',
+          message: [
+            '5 题全对，孙高敏果然是瑞安通！',
+            '眼睛比 GPS 还准。',
+            '任务三已为你解锁。'
+          ],
+          signature: '-- 瑞安关卡组 --'
+        }
+      },
+      {
+        label: '任务三',
+        id: '#RY-003',
+        type: '支线 · 寻宝',
+        mode: 'hunt',
+        icon: '[真宝 假宝]',
+        name: '究竟什么是宝',
+        description: '这个房间内放有许多的线索，寻找线索，获得你的宝物吧。',
+        objectives: [
+          '一切都可能是宝物本宝，究竟是真宝还是假宝'
+        ],
+        rewards: ['寻宝家称号', '顿悟 +1', '空宝箱 x1'],
+        hunt: {
+          clues: [
+            {
+              tag: '最终谜题',
+              text: '【终极线索】\n所有纸条拼在一起，\n请完整输入宝物的真相（一句话）：',
+              answers: ['05.06', '05.06']
+            }
+          ]
+        },
+        reveal: {
+          badge: 'STAGE 03 CLEAR',
+          title: '宝物找到了！',
+          message: [
+            '孙高敏，你找到了——',
+            '宝物就是啥东西也没有吗？',
+            '',
+            '也许真正的宝，',
+            '是晚上的夜猫子，是早上的阿林粉店，是房间里的空调。',
+            '任务四已解锁。'
+          ],
+          signature: '-- 瑞安关卡组 --'
+        }
+      },
+      {
+        label: '任务四',
+        id: '#RY-004',
+        type: '主线 · 味蕾',
+        icon: '[瑞安 FOOD]',
+        name: '瑞安味蕾评测员',
+        description: '吃遍五洲，不如落地第一口家乡味。以归国精英身份，严肃评测瑞安小吃。',
+        objectives: [
+          '买一种瑞安美食，用美食评论家口吻描述三道（外观/香气/口感）',
+          '打分必须有一项出人意料（比如「外观0分，好吃100分」）',
+          '吃完用英式腔说一句："JUST SO SO ~~~."'
+        ],
+        rewards: ['饱食度 MAX', '评论家称号', '乡愁 -50'],
+        reveal: {
+          badge: 'STAGE 04 CLEAR',
+          title: '味蕾评测完毕！',
+          message: [
+            '英国有英国的优雅，',
+            '瑞安有瑞安的热乎，',
+            '欢迎回来，你的胃已经到家了。'
+          ],
+          signature: '-- 瑞安关卡组 --'
+        }
+      },
+      {
+        label: '任务五',
+        id: '#RY-FIN',
+        type: '隐藏 · 终章',
+        icon: '[FINAL !!!]',
+        name: '我又来了 · 终章',
+        description: '集齐前四关回忆，触发隐藏结局。这是《瑞安 我又来了》的最终任务。',
+        objectives: [
+          '在心里默数：英国的日子 再见',
+          '对在场的人说："小的们 还不快来迎接本王。"',
+          '按下 A，领取专属于孙高敏的最终惊喜'
+        ],
+        rewards: ['全通关', '友情 x∞', '回家 Buff'],
+        reveal: {
+          badge: '*** ALL CLEAR ***',
+          title: '孙高敏，欢迎回家！',
+          message: [
+            '从英国到瑞安，',
+            '从时差到熟悉的味道，',
+            '从任务一到这一刻——',
+            '',
+            '这份小游戏是专为你准备的。',
+            '愿你在瑞安玩得开心',
+          
+          ],
+          signature: '—— 《瑞安 我又来了》'
+        }
+      }
+    ];
+
+    const SPRITE = ['  ██  ██  ', ' ████████ ', '██  ██  ██', '██████████', '  ██  ██  '].join('\n');
+    document.getElementById('pixelSprite').textContent = SPRITE;
+
+    // ========== 状态 ==========
+    const bootScreen = document.getElementById('bootScreen');
+    const titleScreen = document.getElementById('titleScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const gameScroll = document.getElementById('gameScroll');
+    const questList = document.getElementById('questList');
+    const reveal = document.getElementById('reveal');
+    const toast = document.getElementById('toast');
+    const progressText = document.getElementById('progressText');
+
+    let currentScene = 'boot';
+    let questStates = QUESTS.map((_, i) => i === 0 ? 'available' : 'locked');
+    let focusedQuest = 0;
+    let activeRevealQuest = -1;
+    let soundEnabled = true;
+    let titleFocus = 0;
+    let quizActive = false;
+    let challengeMode = null;
+    let quizQuestIndex = 1;
+    let quizImageList = [];
+    let huntClueList = [];
+    let quizCurrentIndex = 0;
+    let quizScore = 0;
+    let quizTargetScore = 5;
+    let quizFolder = '游戏/';
+    let quizWrongPending = false;
+    let pendingQuizRestore = null;
+    let titleMenuItems = [];
+    const resetBtn = document.getElementById('resetBtn');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const quizOverlay = document.getElementById('quizOverlay');
+    const quizInput = document.getElementById('quizInput');
+    const quizImage = document.getElementById('quizImage');
+    const quizScoreEl = document.getElementById('quizScore');
+    const quizProgressEl = document.getElementById('quizProgress');
+    const quizFeedback = document.getElementById('quizFeedback');
+    const quizBody = document.getElementById('quizBody');
+    const vkContainer = document.getElementById('vkContainer');
+    const quizFooter = document.getElementById('quizFooter');
+    const challengeTitle = document.getElementById('challengeTitle');
+    const quizScoreBar = document.getElementById('quizScoreBar');
+    const quizScoreWrap = document.getElementById('quizScoreWrap');
+    const quizImgWrap = document.getElementById('quizImgWrap');
+    const huntClueWrap = document.getElementById('huntClueWrap');
+    const huntClueTag = document.getElementById('huntClueTag');
+    const huntClueText = document.getElementById('huntClueText');
+    const challengeInputLabel = document.getElementById('challengeInputLabel');
+
+    // ========== 存档（localStorage · 微信内置浏览器可用）==========
+    function hasSave() {
+      try { return !!localStorage.getItem(GAME_CONFIG.saveKey); } catch (e) { return false; }
+    }
+
+    function saveGame() {
+      try {
+        const data = {
+          v: 1,
+          questStates: questStates.slice(),
+          focusedQuest,
+          soundEnabled,
+          scene: quizActive ? (challengeMode || 'quiz') : currentScene,
+          challenge: quizActive ? {
+            mode: challengeMode,
+            active: quizActive,
+            questIndex: quizQuestIndex,
+            currentIndex: quizCurrentIndex,
+            score: quizScore,
+            wrongPending: quizWrongPending
+          } : null,
+          quiz: (quizActive && challengeMode === 'quiz') || (questStates[1] === 'accepted' && QUESTS[1].mode === 'quiz' && !quizActive) ? {
+            active: quizActive && challengeMode === 'quiz',
+            questIndex: quizQuestIndex,
+            currentIndex: quizCurrentIndex,
+            score: quizScore,
+            wrongPending: quizWrongPending
+          } : null,
+          savedAt: Date.now()
+        };
+        localStorage.setItem(GAME_CONFIG.saveKey, JSON.stringify(data));
+        updateSaveIndicator(true);
+      } catch (e) {
+        updateSaveIndicator(false);
+      }
+    }
+
+    function loadGame() {
+      try {
+        const raw = localStorage.getItem(GAME_CONFIG.saveKey);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!Array.isArray(data.questStates) || data.questStates.length !== QUESTS.length) return false;
+        questStates = data.questStates;
+        focusedQuest = data.focusedQuest || 0;
+        soundEnabled = data.soundEnabled !== false;
+        pendingQuizRestore = data.challenge || data.quiz || null;
+        const btn = document.getElementById('soundToggle');
+        btn.textContent = soundEnabled ? '♪ BGM: ON' : '♪ BGM: OFF';
+        btn.classList.toggle('on', soundEnabled);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function clearSave() {
+      try { localStorage.removeItem(GAME_CONFIG.saveKey); } catch (e) {}
+      pendingQuizRestore = null;
+      updateSaveIndicator(false);
+      updateTitleMenu();
+    }
+
+    function updateSaveIndicator(saved) {
+      if (!saveIndicator) return;
+      if (saved === true || (saved === undefined && hasSave())) {
+        const raw = localStorage.getItem(GAME_CONFIG.saveKey);
+        let timeStr = '';
+        try {
+          const t = JSON.parse(raw).savedAt;
+          if (t) timeStr = ' · ' + new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {}
+        saveIndicator.textContent = '💾 已自动存档' + timeStr;
+        saveIndicator.classList.add('saved');
+      } else {
+        saveIndicator.textContent = '存档：未开始';
+        saveIndicator.classList.remove('saved');
+      }
+    }
+
+    function updateTitleMenu() {
+      titleMenuItems = [document.getElementById('startBtn')];
+      if (hasSave()) {
+        document.getElementById('startBtn').textContent = '继续闯关';
+        resetBtn.style.display = 'block';
+        titleMenuItems.push(resetBtn);
+      } else {
+        document.getElementById('startBtn').textContent = '开始闯关';
+        resetBtn.style.display = 'none';
+      }
+      titleMenuItems.push(document.getElementById('soundToggle'));
+      if (titleFocus >= titleMenuItems.length) titleFocus = 0;
+      updateTitleFocus();
+    }
+
+    function startFreshGame() {
+      questStates = QUESTS.map((_, i) => i === 0 ? 'available' : 'locked');
+      focusedQuest = 0;
+      pendingQuizRestore = null;
+      quizActive = false;
+      saveGame();
+      startBGM();
+      showScene('game');
+      flashToast('新游戏开始！');
+    }
+
+    async function continueFromSave() {
+      loadGame();
+      startBGM();
+      showScene('game');
+      updateSaveIndicator(true);
+      flashToast('存档已读取');
+      if (pendingQuizRestore && pendingQuizRestore.active) {
+        await restoreChallengeSession(pendingQuizRestore);
+      }
+    }
+
+    async function restoreChallengeSession(data) {
+      const idx = data.questIndex ?? 1;
+      const mode = data.mode || (QUESTS[idx].mode === 'hunt' ? 'hunt' : 'quiz');
+      if (mode === 'hunt') await startHunt(idx);
+      else await startQuiz(idx);
+      quizCurrentIndex = data.currentIndex || 0;
+      quizScore = data.score || 0;
+      quizWrongPending = !!data.wrongPending;
+      if (challengeMode === 'quiz') quizScoreEl.textContent = quizScore;
+      updateChallengeUI();
+      if (quizWrongPending) updateQuizControlHint();
+      saveGame();
+    }
+
+    async function restoreQuizSession(data) {
+      await restoreChallengeSession(Object.assign({ mode: 'quiz' }, data));
+    }
+
+    function resetAllProgress() {
+      clearSave();
+      questStates = QUESTS.map((_, i) => i === 0 ? 'available' : 'locked');
+      focusedQuest = 0;
+      pendingQuizRestore = null;
+      startFreshGame();
+      flashToast('存档已清除');
+    }
+
+    // ========== 渲染任务卡 ==========
+    function renderQuests() {
+      questList.innerHTML = '';
+      QUESTS.forEach((q, i) => {
+        const state = questStates[i];
+        const card = document.createElement('article');
+        card.className = 'quest-card' + (i === focusedQuest ? ' focused' : '') +
+          (state === 'locked' ? ' locked' : '') +
+          (state === 'accepted' ? ' accepted' : '') +
+          (state === 'completed' ? ' completed' : '');
+        card.dataset.index = i;
+
+        const statusText = { locked: '未解锁', available: '可接取', accepted: '进行中', completed: '已完成' }[state];
+
+        card.innerHTML = `
+          <div class="quest-card-inner">
+            <div class="quest-label">
+              <span>${q.label}</span>
+              <span class="quest-status-tag">${statusText}</span>
+            </div>
+            <div class="quest-meta"><span>${q.type}</span><span>${q.id}</span></div>
+            <div class="quest-icon-box">${q.icon}</div>
+            <h3 class="quest-name">${q.name}</h3>
+            <p class="quest-desc">${q.description}</p>
+            <div class="section-label">任务目标</div>
+            ${q.objectives.map(o => `<div class="objective-item">${escapeHtml(o)}</div>`).join('')}
+            <div class="section-label">奖励</div>
+            <div class="rewards-row">${q.rewards.map(r => `<span class="reward-tag">${escapeHtml(r)}</span>`).join('')}</div>
+            <div class="quest-action-hint">${getQuestHint(i)}</div>
+          </div>`;
+
+        card.addEventListener('click', () => {
+          focusedQuest = i;
+          updateQuestFocus();
+          flashToast('已选中 ' + q.label);
+        });
+
+        questList.appendChild(card);
+      });
+      updateProgress();
+    }
+
+    function getQuestHint(i) {
+      const s = questStates[i];
+      const q = QUESTS[i];
+      if (s === 'locked') return '🔒 完成上一任务后解锁';
+      if (s === 'available') return '按 A 接受任务';
+      if (s === 'accepted' && q.mode === 'quiz') return '按 A 进入猜店挑战';
+      if (s === 'accepted' && q.mode === 'hunt') return '按 A 开始寻宝解谜';
+      if (s === 'accepted') return '按 A 标记完成';
+      return '✓ 任务已完成';
+    }
+
+    function updateProgress() {
+      const done = questStates.filter(s => s === 'completed').length;
+      progressText.textContent = '进度 ' + done + '/' + QUESTS.length;
+    }
+
+    function updateQuestFocus() {
+      document.querySelectorAll('.quest-card').forEach((el, i) => {
+        el.classList.toggle('focused', i === focusedQuest);
+        el.querySelector('.quest-action-hint').textContent = getQuestHint(i);
+      });
+      const card = document.querySelector('.quest-card[data-index="' + focusedQuest + '"]');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ========== 场景 ==========
+    function showScene(name) {
+      currentScene = name;
+      bootScreen.classList.remove('active');
+      titleScreen.classList.remove('active');
+      gameScreen.classList.remove('active');
+      if (name === 'boot') bootScreen.classList.add('active');
+      if (name === 'title') {
+        titleScreen.classList.add('active');
+        updateTitleMenu();
+      }
+      if (name === 'game') {
+        gameScreen.classList.add('active');
+        renderQuests();
+        updateQuestFocus();
+        saveGame();
+      }
+    }
+
+    function flashToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(flashToast._t);
+      flashToast._t = setTimeout(() => toast.classList.remove('show'), 1200);
+    }
+
+    // ========== 滚动 ==========
+    function getScrollEl() {
+      if (quizActive) {
+        if (document.activeElement === quizInput) return quizBody;
+        return document.getElementById('vkeyboard') || quizBody;
+      }
+      if (currentScene === 'game') return gameScroll;
+      if (currentScene === 'title') return titleScreen;
+      return null;
+    }
+
+    function scrollScreen(dir) {
+      const el = getScrollEl();
+      if (!el) return;
+      const step = 48;
+      const map = { up: [0, -step], down: [0, step], left: [-step, 0], right: [step, 0] };
+      const [dx, dy] = map[dir] || [0, 0];
+      el.scrollBy({ left: dx, top: dy, behavior: 'smooth' });
+      sfxBeep(220, 0.03, 'square', 0.03);
+    }
+
+    // ========== 任务二猜店挑战 ==========
+    function normalizeAnswer(str) {
+      return str.trim()
+        .replace(/\s/g, '')
+        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 65248))
+        .replace(/[？?]/g, '吗')
+        .replace(/[a-zA-Z]/g, ch => ch.toLowerCase());
+    }
+
+    function getAnswerFromFilename(filename) {
+      return filename.replace(/\.[^.]+$/, '');
+    }
+
+    function getQuizImageUrl(folder, file) {
+      return folder + encodeURIComponent(file);
+    }
+
+    function parseManifestJson(text) {
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        try {
+          return JSON.parse(text.replace(/,\s*([\]}])/g, '$1'));
+        } catch (e2) {
+          return null;
+        }
+      }
+    }
+
+    async function loadQuizImages(quest) {
+      const cfg = quest.quiz;
+      quizFolder = cfg.folder || '游戏/';
+      quizTargetScore = cfg.targetScore || 5;
+
+      if (cfg.images && cfg.images.length) {
+        return cfg.images.slice();
+      }
+
+      try {
+        const res = await fetch(quizFolder + 'manifest.json');
+        if (res.ok) {
+          const list = parseManifestJson(await res.text());
+          if (Array.isArray(list) && list.length) return list;
+        }
+      } catch (e) { /* file:// 下 fetch 常失败，已用内置 images */ }
+
+      return [];
+    }
+
+    function matchAnswers(given, answers) {
+      const g = normalizeAnswer(given);
+      return (answers || []).some(a => normalizeAnswer(a) === g);
+    }
+
+    function buildVirtualKeyboard(extraChars) {
+      const rows = [
+        ['1','2','3','4','5','6','7','8','9','0'],
+        ['Q','W','E','R','T','Y','U','I','O','P'],
+        ['A','S','D','F','G','H','J','K','L'],
+        ['Z','X','C','V','B','N','M']
+      ];
+      vkContainer.innerHTML = '';
+
+      rows.forEach(row => {
+        const div = document.createElement('div');
+        div.className = 'vk-row';
+        row.forEach(k => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'vk-key';
+          btn.textContent = k;
+          btn.addEventListener('click', () => insertVkChar(k));
+          div.appendChild(btn);
+        });
+        vkContainer.appendChild(div);
+      });
+
+      const symRow = document.createElement('div');
+      symRow.className = 'vk-row';
+      ['+', '-', '·', '？', '吗', '（', '）'].forEach(ch => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vk-key';
+        btn.textContent = ch;
+        btn.addEventListener('click', () => insertVkChar(ch));
+        symRow.appendChild(btn);
+      });
+      vkContainer.appendChild(symRow);
+
+      const hanRow = document.createElement('div');
+      hanRow.className = 'vk-row vk-chars';
+      const hanChars = extraChars || '阿林野果烈火炒面国排档捞王铁锅年代玖五京菜乃之风粉店瑞安宝物就是啥东西也没有吗空无';
+      [...hanChars].forEach(ch => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vk-key';
+        btn.textContent = ch;
+        btn.addEventListener('click', () => insertVkChar(ch));
+        hanRow.appendChild(btn);
+      });
+      vkContainer.appendChild(hanRow);
+
+      const actionRow = document.createElement('div');
+      actionRow.className = 'vk-row';
+      [
+        { t: '退格', w: 'wide', fn: () => { quizInput.value = quizInput.value.slice(0, -1); } },
+        { t: '清空', w: 'wide', fn: () => { quizInput.value = ''; } },
+        { t: '确认', w: 'wide submit', fn: () => pressA() }
+      ].forEach(({ t, w, fn }) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vk-key action' + (w.includes('submit') ? ' submit' : '') + (w.includes('wide') ? ' wide' : '');
+        btn.textContent = t;
+        btn.addEventListener('click', fn);
+        actionRow.appendChild(btn);
+      });
+      vkContainer.appendChild(actionRow);
+    }
+
+    function insertVkChar(ch) {
+      quizInput.focus();
+      quizInput.value += ch;
+      sfxBeep(440, 0.03, 'square', 0.04);
+    }
+
+    function updateQuizUI() {
+      quizScoreEl.textContent = quizScore;
+      quizProgressEl.textContent = '第 ' + Math.min(quizCurrentIndex + 1, quizImageList.length) + ' / ' + quizImageList.length + ' 题 · 目标 ' + quizTargetScore + ' 分';
+      if (quizCurrentIndex < quizImageList.length) {
+        const file = quizImageList[quizCurrentIndex];
+        quizImage.onerror = () => {
+          quizFeedback.textContent = '图片加载失败，请确认文件：' + file;
+          quizFeedback.className = 'quiz-feedback err';
+        };
+        quizImage.onload = () => {
+          if (!quizFeedback.classList.contains('err') || quizFeedback.textContent.includes('加载失败')) {
+            quizFeedback.textContent = '';
+            quizFeedback.className = 'quiz-feedback';
+          }
+        };
+        quizImage.src = getQuizImageUrl(quizFolder, file);
+        quizImage.alt = '第' + (quizCurrentIndex + 1) + '题';
+        document.getElementById('quizImgLabel').textContent = '第 ' + (quizCurrentIndex + 1) + ' 张 · 请输入店名（答案=文件名）';
+      }
+    }
+
+    async function startQuiz(questIndex) {
+      const quest = QUESTS[questIndex];
+      if (!quest.quiz) return;
+      challengeMode = 'quiz';
+      quizQuestIndex = questIndex;
+      quizImageList = await loadQuizImages(quest);
+      if (!quizImageList.length) {
+        flashToast('未找到图片，请检查「游戏」文件夹');
+        return;
+      }
+      quizCurrentIndex = 0;
+      quizScore = 0;
+      quizWrongPending = false;
+      quizActive = true;
+      quizInput.value = '';
+      quizInput.classList.remove('wrong', 'correct');
+      quizFeedback.textContent = '';
+      quizFeedback.className = 'quiz-feedback';
+      challengeTitle.textContent = quest.label + ' · 看图猜店名';
+      quizScoreBar.style.display = 'flex';
+      quizScoreWrap.style.display = 'inline';
+      quizImgWrap.style.display = 'block';
+      huntClueWrap.style.display = 'none';
+      challengeInputLabel.textContent = '店名答案 · 键盘或虚拟键输入';
+      quizInput.placeholder = '输入店名...';
+      buildVirtualKeyboard();
+      updateChallengeUI();
+      quizOverlay.classList.add('show');
+      updateQuizControlHint();
+      setTimeout(() => quizInput.focus(), 200);
+      flashToast('猜店挑战开始！');
+      sfxBeep(659, 0.08);
+      saveGame();
+    }
+
+    function startHunt(questIndex) {
+      const quest = QUESTS[questIndex];
+      if (!quest.hunt || !quest.hunt.clues || !quest.hunt.clues.length) return;
+      challengeMode = 'hunt';
+      quizQuestIndex = questIndex;
+      huntClueList = quest.hunt.clues.slice();
+      quizCurrentIndex = 0;
+      quizScore = 0;
+      quizWrongPending = false;
+      quizActive = true;
+      quizInput.value = '';
+      quizInput.classList.remove('wrong', 'correct');
+      quizFeedback.textContent = '';
+      quizFeedback.className = 'quiz-feedback';
+      challengeTitle.textContent = quest.label + ' · 寻宝解谜';
+      quizScoreBar.style.display = 'flex';
+      quizScoreWrap.style.display = 'none';
+      quizImgWrap.style.display = 'none';
+      huntClueWrap.style.display = 'block';
+      challengeInputLabel.textContent = '根据线索输入答案 · 虚拟键盘可打字';
+      quizInput.placeholder = '输入线索答案...';
+      buildVirtualKeyboard('宝物就是啥东西也没有吗空无啥东西英国链接');
+      updateChallengeUI();
+      quizOverlay.classList.add('show');
+      updateQuizControlHint();
+      setTimeout(() => quizInput.focus(), 200);
+      flashToast('寻宝开始！找线索，输答案');
+      sfxBeep(659, 0.08);
+      saveGame();
+    }
+
+    function updateChallengeUI() {
+      if (challengeMode === 'hunt') updateHuntUI();
+      else updateQuizUI();
+    }
+
+    function updateHuntUI() {
+      if (quizCurrentIndex >= huntClueList.length) return;
+      const clue = huntClueList[quizCurrentIndex];
+      huntClueTag.textContent = clue.tag || ('线索 ' + (quizCurrentIndex + 1) + ' / ' + huntClueList.length);
+      huntClueText.textContent = clue.text;
+      quizProgressEl.textContent = '进度 ' + (quizCurrentIndex + 1) + ' / ' + huntClueList.length + ' 条线索';
+    }
+
+    function updateQuizControlHint() {
+      const bar = document.getElementById('gameControlBar');
+      const wrongHint = '答错了 · A 下一题 · B 继续作答';
+      if (quizWrongPending) {
+        bar.textContent = wrongHint;
+        quizFooter.textContent = challengeMode === 'hunt'
+          ? 'A 跳过本条线索 · B 继续作答'
+          : 'A 跳过进入下一题 · B 继续作答';
+      } else {
+        bar.textContent = challengeMode === 'hunt' ? '寻宝模式 · A 提交 · B 返回' : '猜店模式 · A 提交 · B 返回';
+        quizFooter.textContent = 'A 提交答案 · B 返回任务列表';
+      }
+    }
+
+    function advanceChallengeStep(correct) {
+      quizWrongPending = false;
+      quizInput.value = '';
+      quizInput.classList.remove('correct', 'wrong');
+      quizFeedback.textContent = '';
+
+      if (challengeMode === 'hunt') {
+        if (correct && quizCurrentIndex >= huntClueList.length - 1) {
+          setTimeout(finishChallenge, 600);
+          return;
+        }
+        quizCurrentIndex++;
+        if (quizCurrentIndex >= huntClueList.length) {
+          quizCurrentIndex = 0;
+          flashToast('请继续寻找最终答案');
+        } else if (correct) {
+          flashToast(correct ? '线索破解！下一条' : '已跳过，下一条线索');
+        }
+        updateChallengeUI();
+        updateQuizControlHint();
+        quizInput.focus();
+        saveGame();
+        return;
+      }
+
+      if (correct && quizScore >= quizTargetScore) {
+        setTimeout(finishChallenge, 600);
+        return;
+      }
+
+      quizCurrentIndex++;
+
+      if (quizCurrentIndex >= quizImageList.length) {
+        if (quizScore >= quizTargetScore) {
+          finishChallenge();
+          return;
+        }
+        quizCurrentIndex = 0;
+        flashToast('未达 ' + quizTargetScore + ' 分，从第 1 题继续');
+      } else if (correct) {
+        flashToast('下一题！');
+      } else {
+        flashToast('已进入下一题（本题未得分）');
+      }
+
+      updateChallengeUI();
+      updateQuizControlHint();
+      quizInput.focus();
+      saveGame();
+    }
+
+    function advanceQuizQuestion(correct) {
+      advanceChallengeStep(correct);
+    }
+
+    function closeQuiz() {
+      quizActive = false;
+      challengeMode = null;
+      quizWrongPending = false;
+      quizOverlay.classList.remove('show');
+      document.getElementById('gameControlBar').textContent = 'A 确认 · B 返回 · 方向键/滑动 滚屏';
+      saveGame();
+    }
+
+    function submitChallengeAnswer() {
+      if (!quizActive) return;
+      if (quizWrongPending) return;
+
+      const given = normalizeAnswer(quizInput.value);
+      if (!given) {
+        quizFeedback.textContent = '请先输入答案';
+        quizFeedback.className = 'quiz-feedback err';
+        sfxBeep(110, 0.08, 'sawtooth', 0.06);
+        return;
+      }
+
+      if (challengeMode === 'hunt') {
+        if (quizCurrentIndex >= huntClueList.length) return;
+        const clue = huntClueList[quizCurrentIndex];
+        if (matchAnswers(quizInput.value, clue.answers)) {
+          quizInput.classList.remove('wrong');
+          quizInput.classList.add('correct');
+          quizFeedback.textContent = quizCurrentIndex >= huntClueList.length - 1
+            ? '✓ 终极谜底破解！'
+            : '✓ 正确！解锁下一条线索';
+          quizFeedback.className = 'quiz-feedback ok';
+          sfxBeep(784, 0.08);
+          sfxBeep(988, 0.1);
+          setTimeout(() => advanceChallengeStep(true), 700);
+        } else {
+          quizWrongPending = true;
+          quizInput.classList.add('wrong');
+          quizFeedback.textContent = '✗ 不对 · A 下一条 · B 继续猜';
+          quizFeedback.className = 'quiz-feedback err';
+          updateQuizControlHint();
+          sfxBeep(110, 0.12, 'sawtooth', 0.07);
+          saveGame();
+        }
+        return;
+      }
+
+      if (quizCurrentIndex >= quizImageList.length) return;
+      const file = quizImageList[quizCurrentIndex];
+      const expected = normalizeAnswer(getAnswerFromFilename(file));
+
+      if (given === expected) {
+        quizScore++;
+        quizScoreEl.textContent = quizScore;
+        quizInput.classList.remove('wrong');
+        quizInput.classList.add('correct');
+        quizFeedback.textContent = '✓ 正确！+1 分';
+        quizFeedback.className = 'quiz-feedback ok';
+        sfxBeep(784, 0.08);
+        sfxBeep(988, 0.1);
+        setTimeout(() => advanceChallengeStep(true), 700);
+      } else {
+        quizWrongPending = true;
+        quizInput.classList.remove('correct');
+        quizInput.classList.add('wrong');
+        quizFeedback.textContent = '✗ 不对 · A 下一题 · B 继续作答';
+        quizFeedback.className = 'quiz-feedback err';
+        updateQuizControlHint();
+        sfxBeep(110, 0.12, 'sawtooth', 0.07);
+        saveGame();
+      }
+    }
+
+    function submitQuizAnswer() {
+      submitChallengeAnswer();
+    }
+
+    function finishChallenge() {
+      const qIndex = quizQuestIndex;
+      const qLabel = QUESTS[qIndex].label;
+      closeQuiz();
+      questStates[qIndex] = 'completed';
+      if (qIndex + 1 < QUESTS.length) questStates[qIndex + 1] = 'available';
+      launchConfetti(120);
+      sfxBeep(988, 0.15);
+      sfxBeep(1175, 0.2);
+      showReveal(qIndex);
+      renderQuests();
+      updateQuestFocus();
+      flashToast(qLabel + ' 通关！');
+      saveGame();
+    }
+
+    function finishQuiz() {
+      finishChallenge();
+    }
+
+    quizInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); pressA(); }
+      e.stopPropagation();
+    });
+
+    // ========== A / B 操作 ==========
+    function pressA() {
+      sfxBeep(880, 0.06);
+      getAudio().resume();
+
+      if (quizActive) {
+        if (quizWrongPending) {
+          sfxBeep(440, 0.06);
+          advanceChallengeStep(false);
+          return;
+        }
+        submitChallengeAnswer();
+        return;
+      }
+
+      if (reveal.classList.contains('show')) {
+        claimReveal();
+        return;
+      }
+
+      if (currentScene === 'title') {
+        const item = titleMenuItems[titleFocus];
+        if (item === document.getElementById('startBtn')) {
+          if (hasSave() && item.textContent === '继续闯关') continueFromSave();
+          else startFreshGame();
+        } else if (item === resetBtn) {
+          resetAllProgress();
+        } else if (item === document.getElementById('soundToggle')) {
+          toggleSound();
+        }
+        return;
+      }
+
+      if (currentScene === 'game') {
+        const state = questStates[focusedQuest];
+        const quest = QUESTS[focusedQuest];
+        if (state === 'locked') {
+          sfxBeep(110, 0.1, 'sawtooth', 0.06);
+          flashToast('任务未解锁');
+          return;
+        }
+        if (state === 'available') {
+          questStates[focusedQuest] = 'accepted';
+          renderQuests();
+          updateQuestFocus();
+          flashToast(quest.label + ' 已接受');
+          saveGame();
+          if (quest.mode === 'quiz') {
+            startQuiz(focusedQuest);
+          } else if (quest.mode === 'hunt') {
+            startHunt(focusedQuest);
+          } else {
+            launchConfetti(30);
+          }
+          return;
+        }
+        if (state === 'accepted') {
+          if (quest.mode === 'quiz') {
+            startQuiz(focusedQuest);
+            return;
+          }
+          if (quest.mode === 'hunt') {
+            startHunt(focusedQuest);
+            return;
+          }
+          questStates[focusedQuest] = 'completed';
+          if (focusedQuest + 1 < QUESTS.length) questStates[focusedQuest + 1] = 'available';
+          showReveal(focusedQuest);
+          renderQuests();
+          launchConfetti(50);
+          saveGame();
+          return;
+        }
+        flashToast('该任务已完成');
+      }
+    }
+
+    function pressB() {
+      sfxBeep(330, 0.06);
+
+      if (quizActive) {
+        if (quizWrongPending) {
+          quizWrongPending = false;
+          quizInput.classList.remove('wrong');
+          quizFeedback.textContent = '请重新输入店名';
+          quizFeedback.className = 'quiz-feedback';
+          updateQuizControlHint();
+          quizInput.focus();
+          flashToast('继续作答');
+          saveGame();
+          return;
+        }
+        closeQuiz();
+        flashToast('已退出猜店挑战');
+        return;
+      }
+
+      if (reveal.classList.contains('show')) {
+        reveal.classList.remove('show');
+        activeRevealQuest = -1;
+        renderQuests();
+        updateQuestFocus();
+        flashToast('已返回任务列表');
+        saveGame();
+        return;
+      }
+
+      if (currentScene === 'game') {
+        showScene('title');
+        flashToast('返回标题画面');
+        return;
+      }
+
+      if (currentScene === 'title') {
+        flashToast('已在标题画面');
+      }
+    }
+
+    function showReveal(index) {
+      const q = QUESTS[index];
+      activeRevealQuest = index;
+      document.getElementById('revealBadge').textContent = q.reveal.badge;
+      document.getElementById('revealTitle').textContent = q.reveal.title;
+      document.getElementById('revealText').innerHTML = q.reveal.message.map(escapeHtml).join('<br>');
+      document.getElementById('revealSignature').textContent = q.reveal.signature;
+      reveal.classList.add('show');
+      sfxBeep(988, 0.12);
+    }
+
+    function claimReveal() {
+      reveal.classList.remove('show');
+      activeRevealQuest = -1;
+      if (questStates.filter(s => s === 'completed').length === QUESTS.length) {
+        launchConfetti(100);
+        flashToast('全任务通关！');
+      } else {
+        flashToast('奖励已领取');
+      }
+      renderQuests();
+      updateQuestFocus();
+      sfxBeep(523, 0.08);
+      saveGame();
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('soundToggle');
+      btn.textContent = soundEnabled ? '♪ BGM: ON' : '♪ BGM: OFF';
+      btn.classList.toggle('on', soundEnabled);
+      if (soundEnabled) startBGM(); else stopBGM();
+      saveGame();
+    }
+
+    function updateTitleFocus() {
+      titleMenuItems.forEach((el, i) => el.classList.toggle('focused', i === titleFocus));
+    }
+
+    function moveTitleFocus(dir) {
+      if (currentScene !== 'title' || !titleMenuItems.length) return;
+      titleFocus = (titleFocus + dir + titleMenuItems.length) % titleMenuItems.length;
+      updateTitleFocus();
+      sfxBeep(220, 0.03, 'square', 0.03);
+    }
+
+    // ========== 按键绑定 ==========
+    function bindPress(el, fn) {
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); el.classList.add('pressed'); fn(); });
+      el.addEventListener('mouseup', () => el.classList.remove('pressed'));
+      el.addEventListener('mouseleave', () => el.classList.remove('pressed'));
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); el.classList.add('pressed'); fn(); }, { passive: false });
+      el.addEventListener('touchend', () => el.classList.remove('pressed'));
+    }
+
+    document.querySelectorAll('.dpad-btn[data-dir]').forEach(btn => {
+      bindPress(btn, () => {
+        const dir = btn.dataset.dir;
+        if (currentScene === 'title' && (dir === 'up' || dir === 'down')) {
+          moveTitleFocus(dir === 'down' ? 1 : -1);
+        } else {
+          scrollScreen(dir);
+        }
+      });
+    });
+    bindPress(document.getElementById('btnA'), pressA);
+    bindPress(document.getElementById('btnB'), pressB);
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      titleFocus = titleMenuItems.indexOf(document.getElementById('startBtn'));
+      if (titleFocus < 0) titleFocus = 0;
+      pressA();
+    });
+    resetBtn.addEventListener('click', () => {
+      titleFocus = titleMenuItems.indexOf(resetBtn);
+      pressA();
+    });
+    document.getElementById('soundToggle').addEventListener('click', () => {
+      titleFocus = titleMenuItems.indexOf(document.getElementById('soundToggle'));
+      pressA();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (quizActive && document.activeElement === quizInput && e.key !== 'Enter' && e.key !== 'Escape') {
+        if (e.key.length === 1 || e.key === 'Backspace') return;
+      }
+      const key = e.key;
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        e.preventDefault();
+        if (currentScene === 'title') {
+          if (key === 'ArrowDown' || key === 'ArrowRight') moveTitleFocus(1);
+          else moveTitleFocus(-1);
+        } else {
+          scrollScreen(key.replace('Arrow', '').toLowerCase());
+        }
+        return;
+      }
+      if (key === 'z' || key === 'Z' || key === 'Enter' || key === ' ') {
+        if (quizActive && document.activeElement === quizInput && key !== 'Enter') return;
+        e.preventDefault();
+        pressA();
+        return;
+      }
+      if (key === 'x' || key === 'X' || key === 'Escape' || key === 'Backspace') {
+        if (quizActive && key === 'Backspace') return;
+        e.preventDefault();
+        pressB();
+      }
+    });
+
+    // ========== 触摸滑动 ==========
+    let touchStartX = 0, touchStartY = 0;
+    function bindSwipe(el) {
+      el.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      el.addEventListener('touchmove', (e) => {
+        if (!e.touches.length) return;
+        const dx = touchStartX - e.touches[0].clientX;
+        const dy = touchStartY - e.touches[0].clientY;
+        el.scrollTop += dy * 0.5;
+        el.scrollLeft += dx * 0.5;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+    }
+    bindSwipe(gameScroll);
+    bindSwipe(titleScreen);
+    bindSwipe(quizBody);
+    bindSwipe(document.getElementById('vkeyboard'));
+
+    // 微信/浏览器：切后台或关闭前自动存档
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveGame();
+    });
+    window.addEventListener('pagehide', saveGame);
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted && hasSave()) {
+        loadGame();
+        if (currentScene === 'game') {
+          renderQuests();
+          updateQuestFocus();
+          updateSaveIndicator(true);
+        }
+        if (currentScene === 'title') updateTitleMenu();
+      }
+    });
+
+    updateTitleMenu();
+
+    // ========== 开机 ==========
+    const loadBar = document.getElementById('loadBar');
+    for (let i = 0; i < 16; i++) {
+      const b = document.createElement('div');
+      b.className = 'load-block';
+      loadBar.appendChild(b);
+    }
+    const blocks = loadBar.querySelectorAll('.load-block');
+
+    const bootSteps = [
+      { delay: 400, fn: () => { document.getElementById('bootLogo').textContent = '瑞安 我又来了'; sfxBeep(440, 0.06); } },
+      { delay: 500, fn: () => { document.getElementById('bootSub').textContent = 'WELCOME BACK 孙高敏'; } },
+      { delay: 300, fn: () => { document.getElementById('bootStatus').textContent = 'LOADING CARtridge...'; } },
+      { delay: 200, fn: () => { blocks[0].classList.add('filled'); sfxBeep(523, 0.04); } },
+      { delay: 100, fn: () => blocks[1].classList.add('filled') },
+      { delay: 100, fn: () => blocks[2].classList.add('filled') },
+      { delay: 100, fn: () => { blocks[3].classList.add('filled'); document.getElementById('bootStatus').textContent = 'CHECKING MEMORY...'; } },
+      { delay: 80, fn: () => blocks[4].classList.add('filled') },
+      { delay: 80, fn: () => blocks[5].classList.add('filled') },
+      { delay: 80, fn: () => blocks[6].classList.add('filled') },
+      { delay: 80, fn: () => { blocks[7].classList.add('filled'); document.getElementById('bootStatus').textContent = 'LOADING GRAPHICS...'; } },
+      { delay: 70, fn: () => blocks[8].classList.add('filled') },
+      { delay: 70, fn: () => blocks[9].classList.add('filled') },
+      { delay: 70, fn: () => blocks[10].classList.add('filled') },
+      { delay: 70, fn: () => { blocks[11].classList.add('filled'); document.getElementById('bootStatus').textContent = 'LOADING SOUND...'; } },
+      { delay: 60, fn: () => blocks[12].classList.add('filled') },
+      { delay: 60, fn: () => blocks[13].classList.add('filled') },
+      { delay: 60, fn: () => blocks[14].classList.add('filled') },
+      { delay: 60, fn: () => { blocks[15].classList.add('filled'); document.getElementById('bootStatus').textContent = 'SYSTEM OK'; sfxBeep(784, 0.1); } },
+      { delay: 500, fn: () => { document.getElementById('bootBlink').textContent = 'READY · PRESS A'; } },
+      { delay: 800, fn: () => { loadGame(); updateTitleMenu(); updateSaveIndicator(hasSave()); showScene('title'); } }
+    ];
+
+    function runBoot() {
+      if (!bootSteps.length) return;
+      const step = bootSteps.shift();
+      setTimeout(() => { step.fn(); runBoot(); }, step.delay);
+    }
+    runBoot();
+    initAccessGate();
+
+    window.addEventListener('error', (e) => {
+      flashToast('页面出错，请刷新重试');
+      console.error(e.error || e.message);
+    });
+
+    // ========== 音效 ==========
+    let audioCtx = null, bgmPlaying = false, bgmTimer = null;
+
+    function getAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function sfxBeep(freq, duration, type = 'square', vol = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudio();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const MELODY = [
+      [523,0.15],[659,0.15],[784,0.15],[659,0.15],
+      [587,0.15],[698,0.15],[880,0.15],[698,0.15],
+      [523,0.15],[659,0.15],[784,0.15],[988,0.3],
+      [880,0.15],[784,0.15],[659,0.15],[587,0.3],[0,0.15]
+    ];
+
+    function startBGM() {
+      if (!soundEnabled || bgmPlaying) return;
+      bgmPlaying = true;
+      let idx = 0;
+      function playNote() {
+        if (!bgmPlaying || !soundEnabled) return;
+        const [freq, dur] = MELODY[idx];
+        if (freq > 0) sfxBeep(freq, dur * 0.9, 'square', 0.04);
+        idx = (idx + 1) % MELODY.length;
+        bgmTimer = setTimeout(playNote, dur * 1000);
+      }
+      getAudio().resume();
+      playNote();
+    }
+
+    function stopBGM() {
+      bgmPlaying = false;
+      clearTimeout(bgmTimer);
+    }
+
+    // ========== 彩纸 ==========
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiPieces = [], animating = false;
+
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class PixelConfetti {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = -8;
+        this.size = Math.floor(Math.random() * 3 + 2) * 2;
+        this.speedY = Math.random() * 2 + 2;
+        this.speedX = (Math.random() - 0.5) * 3;
+        this.color = Math.random() > 0.3 ? '#ffffff' : '#888888';
+      }
+      update() { this.y += this.speedY; this.x += this.speedX; this.speedY += 0.05; }
+      draw() { ctx.fillStyle = this.color; ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size); }
+    }
+
+    function launchConfetti(count) {
+      for (let i = 0; i < count; i++) {
+        const p = new PixelConfetti();
+        p.y = Math.random() * canvas.height * 0.2;
+        confettiPieces.push(p);
+      }
+      if (!animating) animateConfetti();
+    }
+
+    function animateConfetti() {
+      animating = true;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiPieces = confettiPieces.filter(p => p.y < canvas.height + 10);
+      confettiPieces.forEach(p => { p.update(); p.draw(); });
+      if (confettiPieces.length) requestAnimationFrame(animateConfetti);
+      else animating = false;
+    }
+  </script>
+</body>
+</html>
