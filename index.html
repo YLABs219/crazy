@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
-  <title>瑞安 我又来了</title>
+  <title>第一章—— 回国</title>
   <!-- 微信环境不使用 Google 字体，避免国内加载失败 -->
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -529,7 +529,7 @@
     <div class="access-box">
       <div class="access-inner">
         <h2>私密游戏入口</h2>
-        <p>《瑞安 我又来了》<br>仅限受邀玩家 · 请输入访问码</p>
+        <p>《第一章—— 回国》<br>仅限受邀玩家 · 请输入访问码</p>
         <input type="password" class="access-input" id="accessInput" autocomplete="off" placeholder="访问码" maxlength="32">
         <button type="button" class="access-btn" id="accessBtn">进入游戏</button>
         <div class="access-err" id="accessErr"></div>
@@ -579,7 +579,7 @@
           <div class="scene-panel" id="gameScreen">
             <div class="game-scroll" id="gameScroll">
               <div class="game-header">
-                <h2>《瑞安 我又来了》</h2>
+                <h2>《第一章—— 回国》</h2>
                 <p>QUEST LOG · SUN GAOMIN</p>
               </div>
               <div class="player-bar">
@@ -661,7 +661,7 @@
     // ============================================================
     const GAME_CONFIG = {
       playerName: '孙高敏',
-      gameName: '瑞安 我又来了',
+      gameName: '第一章—— 回国',
       saveKey: 'ryan_game_save_v1',
       accessKey: '0506',
       accessSessionKey: 'ryan_access_ok_v1'
@@ -859,7 +859,7 @@
         type: '隐藏 · 终章',
         icon: '[FINAL !!!]',
         name: '我又来了 · 终章',
-        description: '集齐前四关回忆，触发隐藏结局。这是《瑞安 我又来了》的最终任务。',
+        description: '集齐前四关回忆，触发隐藏结局。这是《第一章—— 回国》的最终任务。',
         objectives: [
           '在心里默数：英国的日子 再见',
           '对在场的人说："小的们 还不快来迎接本王。"',
@@ -878,7 +878,7 @@
             '愿你在瑞安玩得开心',
           
           ],
-          signature: '—— 《瑞安 我又来了》'
+          signature: '—— 《第一章—— 回国》'
         }
       }
     ];
@@ -1872,7 +1872,7 @@
     const blocks = loadBar.querySelectorAll('.load-block');
 
     const bootSteps = [
-      { delay: 400, fn: () => { document.getElementById('bootLogo').textContent = '瑞安 我又来了'; sfxBeep(440, 0.06); } },
+      { delay: 400, fn: () => { document.getElementById('bootLogo').textContent = '第一章—— 回国'; sfxBeep(440, 0.06); } },
       { delay: 500, fn: () => { document.getElementById('bootSub').textContent = 'WELCOME BACK 孙高敏'; } },
       { delay: 300, fn: () => { document.getElementById('bootStatus').textContent = 'LOADING CARtridge...'; } },
       { delay: 200, fn: () => { blocks[0].classList.add('filled'); sfxBeep(523, 0.04); } },
