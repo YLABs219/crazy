@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>董若彤生日快乐</title>
+    <meta
+      name="description"
+      content="董若彤生日惊喜页：黑色高级背景、彩色气球蛋糕与照片墙回忆。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&family=Zhi+Mang+Xing&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="site-locked">
+    <canvas id="fireworksCanvas" aria-hidden="true"></canvas>
+    <div class="dust-layer" aria-hidden="true"></div>
+
+    <div id="passwordGate" class="password-gate" aria-live="polite">
+      <div class="password-card">
+        <p class="password-label">Birthday Entry</p>
+        <h2>请输入进入密码</h2>
+        <form id="passwordForm" class="password-form">
+          <input id="passwordInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="输入密码" />
+          <button type="submit">进入</button>
+        </form>
+        <p id="passwordError" class="password-error" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <main class="page-shell">
+      <section class="hero">
+        <div class="hero-scene">
+          <div id="cakeWrap" class="cake-wrap" aria-label="彩色气球蛋糕"></div>
+        </div>
+
+        <div class="title-wrap">
+          <p class="hero-badge">24TH BIRTHDAY</p>
+          <h1 class="hero-title">
+            <span>Happy</span>
+            <span>Birthday</span>
+          </h1>
+          <p class="hero-name">董若彤，生日快乐</p>
+
+          <div class="wish-stage">
+            <div id="wishPrompt" class="wish-prompt">
+              <p>闭上眼睛，许一个愿望吧。</p>
+              <button id="confirmWishBtn" class="confirm-btn" type="button">许好啦。</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery" class="gallery" aria-live="polite">
+        <div class="gallery-inner">
+          <div id="photoWall" class="photo-wall" aria-label="照片墙"></div>
+          <div class="note-panel">
+            <p id="handwriteNote" class="handwrite-note">愿你的人生像烟火一样绚烂，也像星光一样温柔。</p>
+          </div>
+        </div>
+
+        <div id="finalLetter" class="final-letter hidden" aria-live="polite">
+          <div class="letter-paper">
+            <div class="letter-topline">给你的一封信</div>
+            <p id="letterText">今年生日，我思考了好久啊若彤，我始终想不出可以送你什么礼物。物质上你早已自我满足了，想不出什么可以送你的，其实想到的你可能会喜欢的都好贵，鄙人实在无钱购买那些昂贵的礼物。后来我想着你生日去深圳找你玩好了，但是突然这周工作量激增，庆幸还好没和你说找你玩让你空欢喜一场。于是我思前想后，做了一个小网站，祝你开心健康幸福平安。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
